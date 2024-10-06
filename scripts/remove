@@ -1,0 +1,40 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# REMOVE SYSTEM CONFIGURATIONS
+#=================================================
+# REMOVE SYSTEMD SERVICE 
+#=================================================
+ynh_script_progression --message="Removing system configurations related to $app..." --weight=5
+
+# Remove the dedicated NGINX config
+ynh_remove_nginx_config
+
+# Remove the dedicated PHP-FPM config
+ynh_remove_fpm_config
+
+# Remove the app-specific logrotate config
+ynh_remove_logrotate
+
+# Remove the dedicated Fail2Ban config
+ynh_remove_fail2ban_config
+
+# Remove a cron file
+# TODO: Ensure that cron job is not running (How !?)
+ynh_secure_remove --file="/etc/cron.d/$app"
+
+# Cleaning ACL in home directories
+for i in $(ls /home); do
+  # Clean ACL in every directories in /home, except those which start with 'yunohost.'
+  [[ ! $i == yunohost.* ]] \
+    && setfacl --remove g:$app:rwx 2>&1
+done
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Removal of $app completed" --last
