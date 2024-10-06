@@ -1,0 +1,1 @@
+# nextcloud_stable_ynh
